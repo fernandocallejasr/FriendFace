@@ -22,40 +22,12 @@ struct ContentView: View {
                 
                 VStack {
                     ScrollView {
-                            ForEach(users, id: \.id) { user in
-                                HStack {
-                                    VStack(alignment: .leading) {
-                                        Text(user.name)
-                                            .font(.headline)
-                                        
-                                        Spacer()
-                                        
-                                        Text(user.isActive ? "Online" : "Offline")
-                                        Text("\(user.age) years")
-                                    }
-                                    .font(.caption2)
-                                    
-                                    Spacer()
-                                    
-                                    VStack {
-                                        HStack {
-                                            Image(systemName: "case")
-                                            
-                                            Text(user.company)
-                                                .font(.caption2)
-                                                .fontWeight(.regular)
-                                        }
-                                        
-                                        Spacer()
-                                    }
-                                }
-                                .frame(width: 220, height: 60)
-                                .padding()
-                                .background(.mainBackgroundColor)
-                                .clipShape(.rect(cornerRadius: 25))
-                                .shadow(color: .black.opacity(0.2), radius: 10)
-                                .frame(maxWidth: .infinity)
+                        ForEach(users, id: \.id) { user in
+                            NavigationLink(value: user) {
+                                UserBadgeView(user: user)
                             }
+                            .tint(.primary)
+                        }
                     }
                     
                     Button {
@@ -75,12 +47,60 @@ struct ContentView: View {
             .toolbar {
                 ToolbarItem {
                     Button("Add User", systemImage: "plus.circle") {
-                        let user = User(id: UUID(), isActive: false, name: "John Cena", age: 35, company: "WWE", email: "ucantcme@wwe.com", address: "Mojo Dojo House", about: "Wrestler", tags: ["shred"], friends: [Friend(id: UUID(), name: "The Rock")])
+                        let user = User(id: UUID(), isActive: false, name: "John Cena", age: 35, company: "WWE", email: "ucantcme@wwe.com", address: "Mojo Dojo House", about: "Wrestler", registered: Date.now.addingTimeInterval(123333), tags: ["shred"], friends: [Friend(id: UUID(), name: "The Rock")])
                         
                         modelContext.insert(user)
                     }
                 }
+                ToolbarItem {
+                    Button("Delete User", systemImage: "trash") {
+                        print("Delete Users")
+                        try! modelContext.delete(model: User.self)
+                    }
+                }
             }
+            .navigationDestination(for: User.self) { selectedUser in
+                UserDetailView(user: selectedUser)
+            }
+        }
+    }
+    
+    struct UserBadgeView: View {
+        let user: User
+        
+        var body: some View {
+            HStack {
+                VStack(alignment: .leading) {
+                    Text(user.name)
+                        .font(.headline)
+                    
+                    Spacer()
+                    
+                    Text(user.isActive ? "Online" : "Offline")
+                    Text("\(user.age) years")
+                }
+                .font(.caption2)
+                
+                Spacer()
+                
+                VStack {
+                    HStack {
+                        Image(systemName: "case")
+                        
+                        Text(user.company)
+                            .font(.caption2)
+                            .fontWeight(.regular)
+                    }
+                    
+                    Spacer()
+                }
+            }
+            .frame(width: 220, height: 60)
+            .padding()
+            .background(.mainBackgroundColor)
+            .clipShape(.rect(cornerRadius: 25))
+            .shadow(color: .black.opacity(0.2), radius: 10)
+            .frame(maxWidth: .infinity)
         }
     }
     
