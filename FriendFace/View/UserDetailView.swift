@@ -9,9 +9,23 @@ import SwiftData
 import SwiftUI
 
 struct UserDetailView: View {
-    @Bindable var user: User
+    @Environment(\.modelContext) var modelContext
+    
+//    @Bindable var user: User
+    @Query var users: [User]
+    
+    init(userId: UUID) {
+        print("User id: \(userId.uuidString)")
+        
+        _users = Query(filter: #Predicate<User> { user in
+            user.id == userId
+        })
+    }
+    
     
     var body: some View {
+        let user = users[0]
+        
             ZStack {
                 Color.mainBackgroundColor
                     .ignoresSafeArea()
@@ -66,11 +80,35 @@ struct UserDetailView: View {
                         .padding(.bottom, 10)
                     
 //                  About Information
-                    ScrollView {
+                    ScrollView(showsIndicators: false) {
                         Text(user.about)
+                        
+//                      Friends
+                        HStack {
+                            Text("Friends")
+                                .font(.title3)
+                                .fontWeight(.bold)
+                            Spacer()
+                        }
+                        .padding(.top, 10)
+                        
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            LazyHStack {
+                                ForEach(user.friends, id: \.id) { friend in
+                                    
+                                    NavigationLink(value: friend) {
+                                        UserProfileFriendBadge(userId: friend.id)
+                                    }
+                                    .tint(.primary)
+                                }
+                            }
+                        }
                     }
                 }
-                .padding()
+                .padding(.horizontal)
+            }
+            .navigationDestination(for: Friend.self) { friend in
+                UserDetailView(userId: friend.id)
             }
     }
 }
@@ -87,9 +125,9 @@ struct UserDetailView: View {
             fatalError("Error formatting date")
         }
         
-        let user = User(id: UUID(), isActive: false, name: "John Cena", age: 35, company: "WWE", email: "ucantcme@wwe.com", address: "907 Nelson Street, Cotopaxi, South Dakota, 5913", about: "Occaecat consequat elit aliquip magna laboris dolore laboris sunt officia adipisicing reprehenderit sunt. Do in proident consectetur labore. Laboris pariatur quis incididunt nostrud labore ad cillum veniam ipsum ullamco. Dolore laborum commodo veniam nisi. Eu ullamco cillum ex nostrud fugiat eu consequat enim cupidatat. Non incididunt fugiat cupidatat reprehenderit nostrud eiusmod eu sit minim do amet qui cupidatat. Elit aliquip nisi ea veniam proident dolore exercitation irure est deserunt.", registered: userDate, tags: ["shred"], friends: [Friend(id: UUID(), name: "The Rock")])
+        let user = User(id: UUID(), isActive: false, name: "John Cena", age: 35, company: "WWE", email: "ucantcme@wwe.com", address: "907 Nelson Street, Cotopaxi, South Dakota, 5913", about: "Occaecat consequat elit aliquip magna laboris dolore laboris sunt officia adipisicing reprehenderit sunt. Do in proident consectetur labore. Laboris pariatur quis incididunt nostrud labore ad cillum veniam ipsum ullamco. Dolore laborum commodo veniam nisi. Eu ullamco cillum ex nostrud fugiat eu consequat enim cupidatat. Non incididunt fugiat cupidatat reprehenderit nostrud eiusmod eu sit minim do amet qui cupidatat. Elit aliquip nisi ea veniam proident dolore exercitation irure est deserunt.", registered: userDate, tags: ["shred"], friends: [Friend(id: UUID(uuidString: "eccdf4b8-c9f6-4eeb-8832-28027eb70155")!, name: "The Rock")])
         
-        return UserDetailView(user: user)
+        return UserDetailView(userId: user.id)
             .modelContainer(modelContainer)
     } catch {
         return Text("Error creating container: \(error.localizedDescription)")

@@ -47,7 +47,7 @@ struct ContentView: View {
             .toolbar {
                 ToolbarItem {
                     Button("Add User", systemImage: "plus.circle") {
-                        let user = User(id: UUID(), isActive: false, name: "John Cena", age: 35, company: "WWE", email: "ucantcme@wwe.com", address: "Mojo Dojo House", about: "Wrestler", registered: Date.now.addingTimeInterval(123333), tags: ["shred"], friends: [Friend(id: UUID(), name: "The Rock")])
+                        let user = User(id: UUID(uuidString: "368B2E29-F853-4F79-901C-A576CABC9838")!, isActive: false, name: "John Cena", age: 35, company: "WWE", email: "ucantcme@wwe.com", address: "Mojo Dojo House", about: "Wrestler", registered: Date.now.addingTimeInterval(123333), tags: ["shred"], friends: [Friend(id: UUID(uuidString: "eccdf4b8-c9f6-4eeb-8832-28027eb70155")!, name: "The Rock")])
                         
                         modelContext.insert(user)
                     }
@@ -60,7 +60,7 @@ struct ContentView: View {
                 }
             }
             .navigationDestination(for: User.self) { selectedUser in
-                UserDetailView(user: selectedUser)
+                UserDetailView(userId: selectedUser.id)
             }
         }
     }
@@ -134,12 +134,8 @@ struct ContentView: View {
                     ],
                     "friends": [
                         {
-                            "id": "1c18ccf0-2647-497b-b7b4-119f982e6292",
-                            "name": "Daisy Bond"
-                        },
-                        {
-                            "id": "a1ef63f3-0eab-49a8-a13a-e538f6d1c4f9",
-                            "name": "Tanya Roberson"
+                            "id": "368B2E29-F853-4F79-901C-A576CABC9838",
+                            "name": "John Cena"
                         }
                     ]
                 }
