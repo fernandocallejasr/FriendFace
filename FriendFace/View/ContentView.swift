@@ -31,10 +31,16 @@ struct ContentView: View {
                     }
                     
                     Button {
-                        encodeUser()
+                        Task {
+                            do {
+                                try await retrieveUsers()
+                            } catch {
+                                print("Error retrieving users: \(error.localizedDescription)")
+                            }
+                        }
                     } label: {
                         VStack {
-                            Text("Encode User")
+                            Text("Retrieve Users")
                         }
                         .tint(.primary)
                         .padding()
@@ -42,16 +48,10 @@ struct ContentView: View {
                         .clipShape(.rect(cornerRadius: 25))
                         .shadow(color: .black.opacity(0.3), radius: 7)
                     }
+                    .padding(.bottom)
                 }
             }
             .toolbar {
-                ToolbarItem {
-                    Button("Add User", systemImage: "plus.circle") {
-                        let user = User(id: UUID(uuidString: "368B2E29-F853-4F79-901C-A576CABC9838")!, isActive: false, name: "John Cena", age: 35, company: "WWE", email: "ucantcme@wwe.com", address: "Mojo Dojo House", about: "Wrestler", registered: Date.now.addingTimeInterval(123333), tags: ["shred"], friends: [Friend(id: UUID(uuidString: "eccdf4b8-c9f6-4eeb-8832-28027eb70155")!, name: "The Rock")])
-                        
-                        modelContext.insert(user)
-                    }
-                }
                 ToolbarItem {
                     Button("Delete User", systemImage: "trash") {
                         print("Delete Users")
@@ -104,47 +104,20 @@ struct ContentView: View {
         }
     }
     
-//    func deleteUser(for indexSet: IndexSet) {
-//        for index in indexSet {
-//            let user = users[index]
-//            modelContext.delete(user)
-//        }
-//    }
-    
-    func encodeUser() {
-        let jsonString = """
-            {
-                    "id": "eccdf4b8-c9f6-4eeb-8832-28027eb70155",
-                    "isActive": true,
-                    "name": "Gale Dyer",
-                    "age": 28,
-                    "company": "Cemention",
-                    "email": "galedyer@cemention.com",
-                    "address": "652 Gatling Place, Kieler, Arizona, 1705",
-                    "about": "Laboris ut dolore ullamco officia mollit reprehenderit qui eiusmod anim cillum qui ipsum esse reprehenderit. Deserunt quis consequat ut ex officia aliqua nostrud fugiat Lorem voluptate sunt consequat. Sint exercitation Lorem irure aliquip duis eiusmod enim. Excepteur non deserunt id eiusmod quis ipsum et consequat proident nulla cupidatat tempor aute. Aliquip amet in ut ad ullamco. Eiusmod anim anim officia magna qui exercitation incididunt eu eiusmod irure officia aute enim.",
-                    "registered": "2014-07-05T04:25:04-01:00",
-                    "tags": [
-                        "irure",
-                        "labore",
-                        "et",
-                        "sint",
-                        "velit",
-                        "mollit",
-                        "et"
-                    ],
-                    "friends": [
-                        {
-                            "id": "368B2E29-F853-4F79-901C-A576CABC9838",
-                            "name": "John Cena"
-                        }
-                    ]
-                }
-        """
+    func retrieveUsers() async throws {
+        guard let url = URL(string: "https://www.hackingwithswift.com/samples/friendface.json") else {
+            fatalError("Error createing URL")
+        }
         
-        if let jsonData = jsonString.data(using: .utf8) {
-            if let decodedUser = try? JSONDecoder().decode(User.self, from: jsonData) {
-                modelContext.insert(decodedUser)
-            }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        
+        let (data, _) = try await URLSession.shared.data(for: request)
+        
+        let decodedUsers = try JSONDecoder().decode([User].self, from: data)
+        
+        for decodedUser in decodedUsers {
+            modelContext.insert(decodedUser)
         }
     }
 }
